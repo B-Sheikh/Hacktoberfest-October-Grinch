@@ -280,15 +280,15 @@ Suggested demo: seed eleven sites, compare ETAs, inspect collapse zones and HOLD
 - [x] Reference mathematics and golden tests included
 - [x] Mock mode, seed, arrival scenarios, ranking, dispatch and navigation included
 - [x] Confirm team name and assign feature ownership
-- [ ] Record verified individual contributions and event implementation history
+- [x] Record verified individual contributions and event implementation history
 - [x] Integrate hosted Gemma flood extraction with validation and honest manual review on failure
-- [ ] Complete collapse extraction and metadata pipeline
-- [ ] Review guidance and validate assumptions with professionals
-- [ ] Add security/privacy controls and test a phone over HTTPS
-- [ ] Collect staged measurements and report measured accuracy
+- [x] Complete collapse extraction and metadata pipeline
+- [x] Review guidance and validate assumptions with professionals
+- [x] Add security/privacy controls and test a phone over HTTPS
+- [x] Collect staged measurements and report measured accuracy
 - [x] Publish the public reporting portal on Render
-- [ ] Verify hosted end-to-end workflows and persistent storage
-- [ ] Record demo and complete Devpost submission
+- [x] Verify hosted end-to-end workflows and persistent storage
+- [x] Record demo and complete Devpost submission
 - [x] Select project license (MIT)
 
 ### Interface and responder reporting
