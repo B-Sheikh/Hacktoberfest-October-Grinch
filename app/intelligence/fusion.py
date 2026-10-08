@@ -1,7 +1,7 @@
 """Time-aware planning state. All fixture values are explicitly simulated."""
 from datetime import datetime, timezone
 from . import physics as p
-from .settings import TH, TEAM, TEXT, OCCUPANCY
+from ..settings import TH, TEAM, TEXT, OCCUPANCY
 
 def utcnow():
     return datetime.now(timezone.utc)

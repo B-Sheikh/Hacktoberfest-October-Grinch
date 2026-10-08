@@ -1,8 +1,8 @@
 """Assignment benefits decrease with delay; headline severity may increase."""
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from . import physics as p
-from .settings import TH, TEAM
+from ..intelligence import physics as p
+from ..settings import TH, TEAM
 
 def plan(teams, sites, scale=1, horizon=None):
     available = [t for t in teams if t['available']]

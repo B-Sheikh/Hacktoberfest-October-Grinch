@@ -1,5 +1,5 @@
 import pytest
-from app import physics as p
+from app.intelligence import physics as p
 
 
 def test_reference_intervals():

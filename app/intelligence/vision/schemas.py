@@ -1,8 +1,9 @@
 from typing import Literal
 from pydantic import BaseModel, Field, ConfigDict, field_validator
-from ..settings import REFERENCES
+from ...settings import REFERENCES
 
 class Reference(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
     ref_id: str
     waterline_bin: Literal['none','q1','q2','q3','q4','over']
     touches_same_ground_as_water: bool
@@ -15,11 +16,12 @@ class Reference(BaseModel):
         return value
 
 class People(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
     count_visible: int = Field(ge=0)
     contexts: list[Literal['on_roof','in_vehicle','wading','at_window','stranded_ground_floor']]
 
 class FloodExtraction(BaseModel):
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra='forbid', strict=True)
     scene_type: Literal['flood']
     image_usable: bool
     image_issues: list[Literal['dark','blur','no_reference','water_not_visible']]
@@ -32,3 +34,7 @@ class FloodExtraction(BaseModel):
     vehicles_visible: int = Field(ge=0)
     location_type: Literal['street','ground_floor_room','underpass','bridge','field','other']
     hazards: list[Literal['live_wire','gas_smell','fire','open_manhole','animals','none']]
+
+class UnsupportedScene(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    scene_type: Literal['collapse', 'damaged_standing', 'out_of_scope']

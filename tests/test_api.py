@@ -5,12 +5,16 @@ from fastapi.testclient import TestClient
 from PIL import Image
 from app.main import app
 from app import settings
+from tests.conftest import login_admin
 
 @pytest.fixture
 def client(tmp_path,monkeypatch):
+    monkeypatch.setenv('VISION_PROVIDER','mock')
     monkeypatch.setattr(settings,'DB_PATH',tmp_path/'test.db')
     monkeypatch.setattr(settings,'UPLOADS',tmp_path/'uploads')
-    with TestClient(app) as c: yield c
+    with TestClient(app) as c:
+        login_admin(c)
+        yield c
 
 def alert(client):
     r=client.post('/api/alerts',json=dict(hazard='flash_flood',center_lat=11.0168,center_lon=76.9558,radius_m=3000,event_time=(datetime.now(timezone.utc)-timedelta(minutes=40)).isoformat(),phones=['demo']))
@@ -71,3 +75,7 @@ def test_simulated_outbox_and_field(client):
 def test_pages(client):
     for url in ['/command','/authority','/field/demo-team-1','/static/app.js','/static/report.js','/static/style.css']:
         assert client.get(url).status_code==200
+
+def test_maps_receive_origin_only_referrer_policy(client):
+    assert client.get('/report').headers['referrer-policy']=='strict-origin'
+    assert client.get('/office').headers['referrer-policy']=='strict-origin'

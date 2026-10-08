@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Civilian reporting · Waterline</title><link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script defer src="/static/location.js"></script><script defer src="/static/portal.js"></script></head>
+<body class="citizen-body">
+  <header class="citizen-header"><a class="brand" href="/report"><span class="brand-symbol" aria-hidden="true">≈</span>waterline<span class="brand-period">.</span></a><span class="pill">Civilian reporting</span></header>
+  <main class="report civilian-portal">
+    <p class="eyebrow">CIVILIAN REPORTING</p><h1>Report what’s happening<br>in your neighbourhood.</h1><p>You can report without an SMS. Find your locality below, choose the relevant office alert and share your situation, photos and location.</p>
+    <div class="notice">Report from a secure position. This prototype does not contact emergency services.</div>
+    <section class="panel form-panel"><h2>Find your locality</h2><button type="button" class="button secondary" id="portal-locate">Use my current location</button><p id="portal-location-status" role="status">Tap your locality on the map to find matching alerts.</p><div id="portal-map" class="location-map" aria-label="Find alerts near your location"></div><button type="button" class="text-button" id="show-all">Show all available alerts</button></section>
+    <section aria-labelledby="alerts-title"><h2 id="alerts-title">Available office alerts</h2><p id="portal-count" role="status"></p><div id="public-alerts" class="portal-alerts"></div><p id="portal-error" role="alert"></p></section>
+    <section class="panel form-panel"><h2>What happens next?</h2><ol class="flow-list"><li>Tell us whether you need help and how many people are affected.</li><li>Add one to four photos and any observations.</li><li>Pin where the photos were taken and send your report.</li></ol><p>The office can review the evidence and coordinate responders. A receipt confirms that your report was saved; it does not confirm that a team has been dispatched.</p></section>
+    <footer class="page-footer">An office alert is needed to attach your report to the correct event. If no matching alert is available, the office must create one.</footer>
+  </main>
+</body></html>

@@ -1,4 +1,4 @@
-from app.dispatch_reference import run
+from app.operations.dispatch_reference import run
 
 
 def test_golden_dispatch():

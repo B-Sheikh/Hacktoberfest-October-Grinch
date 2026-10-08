@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from .physics import *
+from ..intelligence.physics import *
 sites = {  # id: (lat,lon, P, M, d0, rate, v)
  "S1": (10.000,76.000, 2,1.5, 0.40,0.020,"moderate"),
  "S2": (10.020,76.010, 3,1.0, 0.80,0.000,"moderate"),

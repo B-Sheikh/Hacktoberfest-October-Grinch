@@ -3,7 +3,7 @@ import json
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from . import physics as p
+from .intelligence import physics as p
 
 load_dotenv()
 CONFIG_DIR = Path(__file__).parent / 'config'

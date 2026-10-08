@@ -1,9 +1,73 @@
-const form=document.getElementById('report-form'),steps=[...form.querySelectorAll('fieldset')];let step=0,config,pinned=true;
-const el=id=>document.getElementById(id);
-function show(n){step=n;steps.forEach((s,i)=>s.hidden=i!==n);document.querySelectorAll('.steps span').forEach((s,i)=>s.classList.toggle('active',i===n));el('back').hidden=n===0;el('next').hidden=n===2;el('submit').hidden=n!==2;}
-el('next').onclick=()=>{for(const input of steps[step].querySelectorAll('input'))if(!input.reportValidity())return;show(step+1);};el('back').onclick=()=>show(step-1);
-el('locate').onclick=()=>{if(!navigator.geolocation){el('location-status').textContent='Geolocation unavailable. Enter coordinates.';return;}navigator.geolocation.getCurrentPosition(p=>{form.elements.lat.value=p.coords.latitude;form.elements.lon.value=p.coords.longitude;form.elements.accuracy.value=p.coords.accuracy;pinned=false;el('location-status').textContent=`Accuracy: ${p.coords.accuracy.toFixed(0)} m`;},()=>{el('location-status').textContent='Location unavailable. Enter coordinates or use HTTPS.';},{enableHighAccuracy:true,timeout:10000});};
-async function resize(file){const img=await createImageBitmap(file);try{const ratio=Math.min(1,config.thresholds.resize_px/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.round(img.width*ratio);canvas.height=Math.round(img.height*ratio);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);return await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',config.thresholds.jpeg_quality/100));}finally{img.close();}}
-function upload(data){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST','/api/reports');xhr.timeout=60000;xhr.upload.onprogress=e=>{if(e.lengthComputable)el('progress').value=e.loaded/e.total*100;};xhr.onload=()=>{let body;try{body=JSON.parse(xhr.responseText);}catch{reject(Error('Server response could not be read'));return;}if(xhr.status>=200&&xhr.status<300)resolve(body);else{const error=Error(typeof body.detail==='string'?body.detail:JSON.stringify(body.detail));error.permanent=xhr.status>=400&&xhr.status<500;reject(error);}};xhr.onerror=()=>reject(Error('Connection lost'));xhr.ontimeout=()=>reject(Error('Upload timed out'));xhr.send(data);});}
-form.onsubmit=async e=>{e.preventDefault();el('submit').disabled=true;el('progress').hidden=false;el('error').textContent='';try{const files=[...form.elements.images.files];if(!files.length||files.length>config.thresholds.max_images)throw Error('Choose one to four photos.');const data=new FormData();for(const k of ['state','people_count','note','lat','lon','accuracy'])data.append(k,form.elements[k].value);data.append('pin',String(pinned));data.append('token',location.pathname.split('/').pop());data.append('vulnerable',[...form.querySelectorAll('input[name=vulnerable]:checked')].map(x=>x.value).join(','));for(const f of files)data.append('images',await resize(f),f.name);let receipt;for(let attempt=0;attempt<config.thresholds.retry_attempts;attempt++){try{receipt=await upload(data);break;}catch(err){if(err.permanent||attempt===config.thresholds.retry_attempts-1)throw err;el('error').textContent='Saved in this tab, retrying. Keep this page open.';await new Promise(r=>setTimeout(r,1000*2**attempt));}}form.hidden=true;el('receipt').hidden=false;el('receipt').textContent=`Report ${receipt.report_id}. ${receipt.message}. ${receipt.simulation_notice} ${receipt.tips}`;el('error').textContent='';}catch(err){el('error').textContent=err.message;el('submit').disabled=false;}};
-Promise.all([fetch('/api/config').then(r=>r.json()),fetch('/api/report-link/'+location.pathname.split('/').pop()).then(r=>r.json())]).then(([c,a])=>{config=c;el('safety').textContent=c.templates.safety;el('hazard').textContent=a.hazard.replaceAll('_',' ');}).catch(()=>{el('error').textContent='Could not load this alert. Refresh when connected.';});
+const form = document.getElementById('report-form');
+const steps = [...form.querySelectorAll('fieldset')];
+const el = id => document.getElementById(id);
+let step = 0, config, pinned = true, locationPicker;
+
+function validSection(index) {
+  if (index === 2 && (!form.elements.lat.value || !form.elements.lon.value)) {
+    el('error').textContent = 'Choose the photo location on the map or use your current location.'; return false;
+  }
+  el('error').textContent = '';
+  for (const input of steps[index].querySelectorAll('input,textarea')) if (!input.reportValidity()) return false;
+  return true;
+}
+function show(index) {
+  step = index; steps.forEach((section, i) => section.hidden = i !== index);
+  document.querySelectorAll('.steps span').forEach((label, i) => label.classList.toggle('active', i === index));
+  if (index === 2) requestAnimationFrame(() => locationPicker?.refresh());
+  el('back').hidden = index === 0; el('next').hidden = index === 2; el('submit').hidden = index !== 2;
+}
+el('next').onclick = () => { if (validSection(step)) show(step + 1); };
+el('back').onclick = () => show(step - 1);
+form.elements.images.onchange = () => WaterlineUpload.previews(form.elements.images, el('photo-previews'));
+el('locate').onclick = () => {
+  if (!navigator.geolocation) { el('location-status').textContent = 'Location access is unavailable. Select a location on the map.'; return; }
+  el('location-status').textContent = 'Finding your location…';
+  navigator.geolocation.getCurrentPosition(position => {
+    locationPicker?.setPoint([position.coords.latitude, position.coords.longitude]);
+    form.elements.lat.value = position.coords.latitude; form.elements.lon.value = position.coords.longitude;
+    form.elements.accuracy.value = position.coords.accuracy; pinned = false;
+    el('location-status').textContent = `Location found. Accuracy about ${position.coords.accuracy.toFixed(0)} metres.`;
+  }, () => { el('location-status').textContent = 'Could not access location. Check permission or select a location on the map. Phone access requires HTTPS.'; }, { enableHighAccuracy: true, timeout: 10000 });
+};
+form.onsubmit = async event => {
+  event.preventDefault(); if (!validSection(step) || !config) return;
+  el('submit').disabled = true; el('progress').hidden = false; el('error').textContent = '';
+  try {
+    const files = [...form.elements.images.files];
+    if (!files.length || files.length > config.thresholds.max_images) throw Error('Choose one to four photos.');
+    const data = new FormData();
+    for (const key of ['state', 'people_count', 'note', 'lat', 'lon', 'accuracy']) data.append(key, form.elements[key].value);
+    data.append('pin', String(pinned)); data.append('token', location.pathname.split('/').pop());
+    data.append('vulnerable', [...form.querySelectorAll('input[name=vulnerable]:checked')].map(input => input.value).join(','));
+    el('upload-status').textContent = 'Preparing your photos…';
+    for (const file of files) data.append('images', await WaterlineUpload.resize(file, config.thresholds), file.name);
+    const receipt = await WaterlineUpload.send('/api/reports', data, config.thresholds, progress => el('progress').value = progress, status => el('upload-status').textContent = status);
+    form.hidden = true; document.querySelector('.steps').hidden = true; el('receipt').hidden = false;
+    const title = document.createElement('h2'); title.textContent = 'Your report has been received';
+    const reference = document.createElement('p'); reference.textContent = 'Reference: ' + receipt.report_id;
+    const message = document.createElement('p'); message.textContent = receipt.message + ' ' + receipt.simulation_notice;
+    const tips = document.createElement('p'); tips.textContent = receipt.tips;
+    el('receipt').replaceChildren(title, reference, message, tips);
+  } catch (error) { el('error').textContent = error.message; el('submit').disabled = false; }
+};
+async function start() {
+  const token = location.pathname.split('/').pop();
+  const [configuration, alertResponse] = await Promise.all([fetch('/api/config'), fetch('/api/report-link/' + token)]);
+  if (!configuration.ok || !alertResponse.ok) throw Error('This reporting link could not be loaded. Refresh when connected.');
+  config = await configuration.json(); const alert = await alertResponse.json();
+  el('safety').textContent = config.templates.safety;
+  el('hazard').textContent = alert.hazard.replaceAll('_', ' ') + ' · Conditions in your area';
+  el('vision-notice').textContent = config.vision.provider === 'live' ? 'Resized photos are sent to Google for scene analysis. AI failures and unmeasurable scenes are saved for manual review; no simulated measurement is substituted.' : 'Photo processing is in demonstration mode. Actual image contents will not be assessed.';
+  locationPicker = WaterlineLocation.create('report-location-map', { status: el('location-status'), onChange: point => {
+    form.elements.lat.value = point.lat; form.elements.lon.value = point.lon;
+    form.elements.accuracy.value = config.thresholds.accuracy_warn_m; pinned = true;
+  } });
+  locationPicker?.setPoint([alert.center_lat, alert.center_lon]);
+  // Show the alert area, but require an explicit photo location rather than accepting its center.
+  form.elements.lat.value = ''; form.elements.lon.value = '';
+  locationPicker?.reset();
+  el('location-status').textContent = 'Use your current location or tap the map where the photo was taken.';
+  el('next').disabled = false;
+}
+start().catch(error => { el('error').textContent = error.message; });

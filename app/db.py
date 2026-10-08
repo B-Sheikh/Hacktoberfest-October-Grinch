@@ -3,11 +3,19 @@ from contextlib import contextmanager
 from . import settings
 
 SCHEMA = """
+CREATE TABLE IF NOT EXISTS admin_sessions (
+ token_hash TEXT PRIMARY KEY, username TEXT NOT NULL, expires REAL NOT NULL, credential_version TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS login_attempts (
+ client TEXT PRIMARY KEY, failures INTEGER NOT NULL, started REAL NOT NULL);
 CREATE TABLE IF NOT EXISTS alerts (
  id TEXT PRIMARY KEY, data TEXT NOT NULL, demo INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS recipients (
  token TEXT PRIMARY KEY, alert_id TEXT NOT NULL REFERENCES alerts(id) ON DELETE CASCADE,
  phone TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', message TEXT);
+CREATE TABLE IF NOT EXISTS public_links (
+ alert_id TEXT PRIMARY KEY REFERENCES alerts(id) ON DELETE CASCADE, token TEXT UNIQUE NOT NULL);
+CREATE TABLE IF NOT EXISTS residents (
+ phone TEXT PRIMARY KEY, name TEXT NOT NULL, lat REAL NOT NULL, lon REAL NOT NULL, consent INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS incidents (
  id TEXT PRIMARY KEY, alert_id TEXT NOT NULL REFERENCES alerts(id) ON DELETE CASCADE,
  family TEXT NOT NULL, lat REAL NOT NULL, lon REAL NOT NULL,

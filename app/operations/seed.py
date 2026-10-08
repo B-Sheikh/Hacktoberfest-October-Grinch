@@ -1,7 +1,7 @@
 """Eleven explicitly simulated sites from section 11 of the supplied spec."""
 from datetime import timedelta
-from .fusion import utcnow
-from . import physics as p
+from ..intelligence.fusion import utcnow
+from ..intelligence import physics as p
 
 def scenario():
     now=utcnow()

@@ -1,4 +1,4 @@
-from .settings import TEXT
+from ..settings import TEXT
 
 def briefing(site):
     if site['family']=='flood':
@@ -13,4 +13,4 @@ def briefing(site):
     deadline=site.get('time_to_critical_min')
     return dict(SITUATION=situation,DEADLINE=f'{deadline:.1f} min to context threshold (assumption)' if deadline is not None else 'No finite deadline computed',
                 HAZARDS=', '.join(site.get('hazards',[])) or 'No hazard recorded; absence is not clearance',BRING=bring,ACTIONS=action,
-                UNCERTAIN='All mock/demo measurements are simulated. '+TEXT['footer'])
+                UNCERTAIN=('Mock/demo measurements are simulated. ' if site.get('simulated') else 'AI-selected references and rate assumptions require verification. ')+TEXT['footer'])
