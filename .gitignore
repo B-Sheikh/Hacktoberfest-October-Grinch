@@ -1,0 +1,21 @@
+# Local competition reference materials
+/Hacktoberfest 2026 Gemma Opening Ceremony.pptx.pdf
+/WhatsApp Image 2026-10-08 at 10.04.28 AM.jpeg
+/WhatsApp Image 2026-10-08 at 9.32.46 AM.jpeg
+
+# Python and local development
+.venv/
+.local/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+.env.*
+!.env.example
+
+# Private runtime data
+/data/
+/uploads/
+*.db
+*.db-shm
+*.db-wal

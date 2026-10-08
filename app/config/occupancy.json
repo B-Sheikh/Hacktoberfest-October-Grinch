@@ -1,0 +1,16 @@
+{
+  "typical_people": {
+    "residential_low": 4,
+    "residential_apartment": 20,
+    "school": 150,
+    "commercial": 20,
+    "hospital": 60,
+    "market": 30,
+    "religious": 20,
+    "unknown": 1
+  },
+  "day_fraction": 0.4,
+  "night_fraction": 0.9,
+  "school_day_fraction": 0.8,
+  "school_other_fraction": 0.05
+}

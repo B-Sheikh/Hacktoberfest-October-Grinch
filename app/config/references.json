@@ -1,0 +1,86 @@
+{
+  "flood": {
+    "tyre_center_car": [
+      0.28,
+      0.36
+    ],
+    "car_roof": [
+      1.4,
+      1.75
+    ],
+    "car_door_sill": [
+      0.3,
+      0.45
+    ],
+    "bus_tyre_center": [
+      0.45,
+      0.58
+    ],
+    "motorbike_wheel_center": [
+      0.22,
+      0.33
+    ],
+    "motorbike_seat": [
+      0.75,
+      0.85
+    ],
+    "kerb_top": [
+      0.1,
+      0.2
+    ],
+    "stair_riser": [
+      0.15,
+      0.19
+    ],
+    "door_threshold": [
+      0.0,
+      0.05
+    ],
+    "door_handle": [
+      0.9,
+      1.1
+    ],
+    "door_top": [
+      1.95,
+      2.15
+    ],
+    "window_sill": [
+      0.8,
+      1.05
+    ],
+    "wall_socket_low": [
+      0.3,
+      0.45
+    ],
+    "person_knee": [
+      0.42,
+      0.55
+    ],
+    "person_waist": [
+      0.9,
+      1.1
+    ],
+    "person_chest": [
+      1.15,
+      1.4
+    ]
+  },
+  "collapse": {
+    "brick_length": [
+      0.19,
+      0.23
+    ],
+    "brick_course_height": [
+      0.08,
+      0.1
+    ],
+    "door_leaf_width": [
+      0.75,
+      1
+    ],
+    "hand_width": [
+      0.08,
+      0.1
+    ]
+  }
+}

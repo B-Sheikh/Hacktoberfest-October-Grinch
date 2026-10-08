@@ -1,0 +1,8 @@
+{
+  "safety": "Do not enter floodwater or damaged buildings to take a photo. Report only from a secure location.",
+  "footer": "Decision support only. Estimates carry uncertainty; incident commander decides.",
+  "projection": "Projection assumes the water keeps rising at the estimated rate. Flash floods peak and recede; this is a worst-case planning scenario, not a forecast.",
+  "sms": "[ALERT] {hazard} warning. If it is safe to do so, report conditions: {link}. Do not enter floodwater or damaged buildings.",
+  "flood_tips": "Move to higher ground or an upper floor. Never walk or drive through moving water. Stay away from power lines. Do not enter water for a photo.",
+  "collapse_tips": "Do not re-enter a damaged building. Stay clear of leaning walls. If trapped, cover your mouth and signal by tapping if possible."
+}

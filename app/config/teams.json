@@ -1,0 +1,38 @@
+{
+  "specs": {
+    "boat": {
+      "speed_kmh": 12,
+      "max_depth_m": null,
+      "capabilities": [
+        "water"
+      ]
+    },
+    "rescue_4x4": {
+      "speed_kmh": 30,
+      "max_depth_m": 0.45,
+      "capabilities": [
+        "road"
+      ]
+    },
+    "heavy_usar": {
+      "speed_kmh": 25,
+      "max_depth_m": 0.6,
+      "capabilities": [
+        "heavy_lift",
+        "road",
+        "shoring"
+      ]
+    },
+    "light_crew": {
+      "speed_kmh": 4,
+      "max_depth_m": 0.3,
+      "capabilities": [
+        "foot"
+      ]
+    }
+  },
+  "mobilise_min": 10,
+  "detour": 1.4,
+  "boat_min_depth_m": 0.5,
+  "light_max_hr": 0.75
+}

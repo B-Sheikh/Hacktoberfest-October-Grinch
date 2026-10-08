@@ -1,0 +1,36 @@
+{
+  "priors": {
+    "receding": [
+      -0.005,
+      0.0
+    ],
+    "steady": [
+      0.0,
+      0.001
+    ],
+    "slow": [
+      0.001,
+      0.003
+    ],
+    "moderate": [
+      0.003,
+      0.01
+    ],
+    "rapid": [
+      0.01,
+      0.03
+    ]
+  },
+  "velocity": {
+    "still": 0.0,
+    "slow": 0.5,
+    "moderate": 1.5,
+    "rapid": 3.0
+  },
+  "default": {
+    "flash_flood": "moderate",
+    "cyclone": "slow",
+    "earthquake": "moderate",
+    "el_nino_extreme_rain": "slow"
+  }
+}

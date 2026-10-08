@@ -1,0 +1,38 @@
+{
+  "illustrative": true,
+  "curve": [
+    [
+      0,
+      0.95
+    ],
+    [
+      24,
+      0.9
+    ],
+    [
+      48,
+      0.8
+    ],
+    [
+      72,
+      0.37
+    ],
+    [
+      96,
+      0.33
+    ],
+    [
+      120,
+      0.2
+    ],
+    [
+      240,
+      0.05
+    ]
+  ],
+  "extrication_min": {
+    "manual_cribbing": 90,
+    "airbags_hydraulic": 240,
+    "crane_heavy": 480
+  }
+}
