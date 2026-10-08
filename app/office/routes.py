@@ -25,8 +25,66 @@ import os
 import secrets
 import time
 from fastapi import APIRouter
+from pathlib import Path
 
 router = APIRouter()
+
+@router.get('/api/office/reports')
+def report_inbox():
+    with db.connection() as c:
+        result=[]
+        for row in c.execute('SELECT * FROM reports ORDER BY rowid DESC'):
+            value=json.loads(row['data'])
+            result.append({'id':row['id'],'incident_id':row['incident_id'],'alert_id':row['alert_id'],
+                'created_at':value['created_at'],'note':value.get('note_text',''),
+                'team_id':value.get('team_id'),'extraction_status':value['extraction_status'],
+                'photos':[f"/api/reports/{row['id']}/photos/{i}" for i in range(len(value.get('image_paths',[])))]})
+        return result
+
+@router.delete('/api/reports/{report_id}')
+def delete_report(report_id:str):
+    with db.connection() as c:
+        row=c.execute('SELECT * FROM reports WHERE id=?',(report_id,)).fetchone()
+        if not row: raise HTTPException(404,'Report not found')
+        record=json.loads(row['data'])
+        # Resolve paths before deletion; never unlink anything outside the upload directory.
+        paths=[Path(value).resolve() for value in record.get('image_paths',[])]
+        paths=[path for path in paths if path.parent==settings.UPLOADS.resolve()]
+        c.execute('DELETE FROM reports WHERE id=?',(report_id,))
+        incident=c.execute('SELECT * FROM incidents WHERE id=?',(row['incident_id'],)).fetchone()
+        if incident and incident['family']=='flood' and not row['duplicate']:
+            data=json.loads(incident['data'])
+            previous=data['series']
+            data['series']=[sample for sample in previous if sample['captured_at']!=record['captured_at']]
+            if len(previous)!=len(data['series']):
+                stamps={sample['captured_at'] for sample in data['series']}
+                remaining=[json.loads(r['data']) for r in c.execute('SELECT data FROM reports WHERE incident_id=? AND duplicate=0',(incident['id'],))]
+                contributors=sorted((r for r in remaining if r['captured_at'] in stamps),key=lambda r:r['captured_at'])
+                latest=contributors[-1] if contributors else None
+                extraction=latest['extraction'] if latest else {}
+                people=extraction.get('people',{})
+                data.update(flow_class=extraction.get('flow_class','unknown'),debris=extraction.get('debris','none'),
+                    contexts=people.get('contexts',[]),hazards=extraction.get('hazards',[]),
+                    people_count=max([max(r.get('people_count',0),r.get('extraction',{}).get('people',{}).get('count_visible',0)) for r in contributors] or [0]),
+                    vulnerable=sorted({v for r in contributors for v in r.get('vulnerable',[])}),
+                    flags=sorted({flag for sample in data['series'] for flag in sample.get('flags',[])})+['report_deleted_review_required'])
+                alert=require_alert(c,incident['alert_id'])
+                data['rate_class']={'receding':'receding','steady':'steady','rising_slow':'slow','rising_moderate':'moderate','rising_rapid':'rapid'}.get(extraction.get('trend'),settings.RATES['default'][alert['hazard']])
+                if latest:
+                    data['extraction_status']=latest['extraction_status']
+                    data['simulated']=latest['extraction_status'] in ['mock','failed']
+                    weights=[1/max(r.get('loc_accuracy_m',100),.1) for r in contributors]
+                    data['location_weight']=sum(weights)
+                    for coordinate in ['lat','lon']:
+                        data[coordinate]=sum(r[coordinate]*weight for r,weight in zip(contributors,weights))/sum(weights)
+                # Retain status/field history, but do not dispatch from an estimate without evidence.
+                if not data['series']: c.execute('DELETE FROM assignments WHERE incident_id=?',(incident['id'],))
+                c.execute('UPDATE incidents SET lat=?,lon=?,data=? WHERE id=?',(data.get('lat',incident['lat']),data.get('lon',incident['lon']),dump(data),incident['id']))
+    pending=False
+    for path in paths:
+        try: path.unlink(missing_ok=True)
+        except OSError: pending=True
+    return {'status':'deleted','report_id':report_id,'photo_cleanup_pending':pending}
 
 @router.get('/admin/login')
 def login_page(request:Request):

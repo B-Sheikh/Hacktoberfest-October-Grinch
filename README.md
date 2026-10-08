@@ -15,7 +15,7 @@ Waterline is our planned project for **Hacktoberfest Hack Day — Coimbatore 202
 | Aadidev | Public portal, civilian reporting, photo upload and location capture |
 | Sanjay S M | Command dashboard, team dispatch, responder workflows and integration verification |
 
-These are assigned development responsibilities, not claims of completed individual contributions. OpenAI Codex assisted with implementation, documentation and verification.
+These are assigned development responsibilities, not claims of completed individual contributions. Confirmed project work includes repository preparation, feature organization, deployment configuration and submission materials directed by Abhishek Bharathi. Individual completed code contributions for the other members have not been confirmed. OpenAI Codex assisted with implementation, documentation and verification.
 
 ## Problem statement
 
@@ -45,7 +45,7 @@ Hazard labels include flash flood, cyclone, earthquake, and El Niño-associated 
 
 ### Planned features
 
-Real collapse-photo and note/voice processing; validated EXIF capture time/GPS; full professionally reviewed playbook; polygon area editing; public-report rate limits, separate responder accounts, privacy deletion and retention; deployment. Real SMS, multilingual controls, calibration, OSRM routing and AI-rephrased briefings are optional milestones. See [the implementation plan](docs/IMPLEMENTATION.md) for requirement-by-requirement status.
+Real collapse-photo and note/voice processing; validated EXIF capture time/GPS; full professionally reviewed playbook; polygon area editing; public-report rate limits, separate responder accounts, privacy deletion and retention; deployment hardening. Real SMS, multilingual controls, calibration, OSRM routing and AI-rephrased briefings are optional milestones. See [the implementation plan](docs/IMPLEMENTATION.md) for requirement-by-requirement status.
 
 ## Innovation and differentiation
 
@@ -89,7 +89,7 @@ flowchart TD
 | Configuration | JSON files and python-dotenv |
 | Tests | pytest, FastAPI TestClient and httpx |
 | Maps | OpenStreetMap tiles and external navigation links |
-| Infrastructure / SMS | Local server and simulated outbox; public deployment N/A |
+| Infrastructure / SMS | Render-hosted prototype and local development; simulated SMS outbox |
 
 ### How it works
 
@@ -142,7 +142,7 @@ Each folder contains working feature code and a detailed README covering its fil
 
 This initial milestone contains reference mathematics and tests, configuration, persisted mock reports, the eleven-site seed, command/citizen interfaces, simulated alert sending, dispatch and field feedback. This records repository work, not event completion history or individual member contributions. The team should add confirmed contributions and hackathon chronology as work progresses.
 
-Gemma API access and a blank-image out-of-scope classification were verified during integration. Real SMS, deployment, professionally validated procedures and real-photo measurement accuracy have not been established. The specification's two-hour schedule is a proposed plan, not a measured completion claim.
+Gemma API access and a blank-image out-of-scope classification were verified during integration. The public reporting portal is available on Render. Real SMS, professionally validated procedures, hosted storage persistence and real-photo measurement accuracy have not been established. The specification's two-hour schedule is a proposed plan, not a measured completion claim.
 
 ## Setup and usage
 
@@ -158,6 +158,7 @@ cd Hacktoberfest-October-Grinch
 py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 Copy-Item .env.example .env
+.\.venv\Scripts\python.exe -m app.office.auth
 .\run.ps1
 ```
 
@@ -171,6 +172,7 @@ cd Hacktoberfest-October-Grinch
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 cp .env.example .env
+.venv/bin/python -m app.office.auth
 sh run.sh
 ```
 
@@ -178,7 +180,7 @@ Open [Command](http://localhost:8000/command), [Main office](http://localhost:80
 
 ### Environment variables
 
-No credentials are required for mock mode. `.env`, databases, uploads and local development files are ignored.
+No Google API key is required for mock mode. Operator pages still require the admin credentials generated during setup. `.env`, databases, uploads and local development files are ignored.
 
 | Variable | Current use |
 | --- | --- |
@@ -208,7 +210,7 @@ ETA, mobilisation, vehicle limits and thresholds live in `app/config/`. Model re
 
 Alerts become available in the civilian portal when created, even if no recipients match. There is currently no expiry/archive control; choose the relevant event by its displayed time. SMS is entirely simulated, including when Twilio environment variables are set. No provider calls or text messages are made. The office and operational APIs require an admin session. Public-report abuse controls remain pending; keep this prototype in a controlled demonstration.
 
-Phone geolocation and camera access need HTTPS. On another device, `localhost` refers to that device, so share the tunnel URL with the responder and open `/responders` there. For a supervised demo, use `cloudflared tunnel --url http://localhost:8000` or `ngrok http 8000`, set `PUBLIC_BASE_URL` to the resulting HTTPS URL and restart. Real-phone HTTPS has not yet been verified. Admin login protects office and operational pages/APIs. Public report links require no login. Use only a controlled demonstration with non-sensitive data until public abuse controls and deployment hardening are completed.
+Phone geolocation and camera access need HTTPS. On another device, `localhost` refers to that device, so share the tunnel URL with the responder and open `/responders` there. For a supervised demo, use `cloudflared tunnel --url http://localhost:8000` or `ngrok http 8000`, set `PUBLIC_BASE_URL` to the resulting HTTPS URL and restart. The hosted public portal uses HTTPS; actual phone geolocation and camera capture have not yet been verified. Admin login protects office and operational pages/APIs. Public report links require no login. Use only a controlled demonstration with non-sensitive data until public abuse controls and deployment hardening are completed.
 
 ### Verification
 
@@ -235,7 +237,7 @@ A photo cannot see inside rubble. Apertures can be upper bounds on interior heig
 
 Travel is approximate; road closures, approach depths and equipment availability are unknown. The priority index is relative, not a probability, and cross-hazard comparisons are not precise equivalences. Every estimate and action needs human oversight.
 
-Phone labels, notes, locations and images are stored locally with no face recognition. In live mode resized photos are additionally sent to Google for extraction; the citizen screen discloses this before submission. There is no automatic retention or deletion endpoint yet. Use synthetic data in this initial build. Public-report token/IP rate limits, report invalidation, secure deployment and privacy controls remain required before wider use.
+Phone labels, notes, locations and images are stored locally with no face recognition. In live mode resized photos are additionally sent to Google for extraction; the citizen screen discloses this before submission. There is no automatic retention or deletion endpoint yet. Use synthetic data in this initial build. Public-report token/IP rate limits, report invalidation, deployment hardening and privacy controls remain required before wider use.
 
 ## Challenges and learnings
 
@@ -259,13 +261,13 @@ Leaflet is loaded via unpkg. OpenStreetMap tiles show contributor attribution; u
 - [INSARAG Guidelines](https://insarag.org/methodology/insarag-guidelines/): collapse-methodology reference; project factors still need professional validation. No certification or endorsement is claimed.
 - NDMA and NWS guidance are named sources for the planned playbook; per-rule grounding remains pending.
 
-**Project license:** No project-wide license has been granted for team-owned code. Third-party components retain their own licenses.
+**Project license:** Team-owned project code is licensed under the [MIT License](LICENSE). Third-party components, models, map data and external reference material retain their respective licenses and terms.
 
 ## Working application, demo and Devpost
 
 - **Local application:** [Command](http://localhost:8000/command) while the server runs.
-- **Public deployment:** Not deployed.
-- **Demo video:** Not recorded.
+- **Public deployment:** [Citizen reporting portal](https://hacktoberfest-october-grinch.onrender.com/report). [Operator login](https://hacktoberfest-october-grinch.onrender.com/admin/login) requires private admin credentials. See [Render deployment and storage instructions](docs/DEPLOYMENT.md).
+- **Demo video:** The team will supply the recording separately.
 - **Devpost submission:** Not created or linked.
 
 Suggested demo: seed eleven sites, compare ETAs, inspect collapse zones and HOLD/SHORE FIRST flags, dispatch teams, open field guidance, then create a simulated alert and submit a mock photo. Keep mock badges visible in recordings.
@@ -284,8 +286,10 @@ Suggested demo: seed eleven sites, compare ETAs, inspect collapse zones and HOLD
 - [ ] Review guidance and validate assumptions with professionals
 - [ ] Add security/privacy controls and test a phone over HTTPS
 - [ ] Collect staged measurements and report measured accuracy
-- [ ] Deploy, record demo and complete Devpost submission
-- [ ] Select project license
+- [x] Publish the public reporting portal on Render
+- [ ] Verify hosted end-to-end workflows and persistent storage
+- [ ] Record demo and complete Devpost submission
+- [x] Select project license (MIT)
 
 ### Interface and responder reporting
 
@@ -318,3 +322,17 @@ The civilian portal first requests precise device location, then tries an approx
 Device location still requires browser permission, a secure context (HTTPS or localhost), and working device Location services. Desktops and embedded browsers may be unable to return a position; the app does not substitute an IP-derived or guessed location. Use the map or an alert's direct reporting link in that case. Actual device GPS and browser map rendering remain unverified in this session.
 
 Optional JavaScript interaction checks (Node.js): `node --test tests/test_location.cjs`. These test accuracy bounds, tile failure messaging, approximate-location recovery, permission denial and stale device callbacks without requesting physical device location.
+
+## Deployment and automated checks
+
+The hosted prototype and full Render instructions are documented in [Deployment](docs/DEPLOYMENT.md). Persistent storage must be configured and verified separately; public page availability does not establish durability.
+
+[Waterline checks](.github/workflows/ci.yml) runs the Python suite and JavaScript location tests on pushes, pull requests and manual workflow dispatch. CI uses explicit mock mode and needs no API secrets. A successful local run does not mean the GitHub workflow has already run.
+
+See [Demo and submission guide](docs/DEMO.md) for screenshots, a recording sequence and outstanding submission evidence.
+
+### Deleting a report
+
+Sign in and open **Main office → Individual reports**. Each civilian or field photo submission has its own photos, notes, status, reference and **Delete report** button, including manual-review reports. The same control is available in a site's **Photos & field reports** history. Confirming permanently removes the report record and its uploaded photos, and updates campaign counts. This action has no undo.
+
+For a contributing flood report, its depth sample is removed and remaining report metadata/location is recalculated. If no depth observations remain, the site is excluded from the ranked queue and its team assignment is released. The incident record and independent field-update history remain stored; deleting a photo report does not delete a status/measurement update. Duplicate-report deletion leaves the original observation intact. If Windows prevents removal of a photo file, the dashboard reports that local file cleanup is still needed; the deleted report/photo URLs are unavailable immediately.

@@ -19,3 +19,5 @@
 .brand-symbol{font-size:0;background-image:url('/static/waterline-mark.svg');background-position:center;background-repeat:no-repeat;background-size:82% 82%;flex-shrink:0}
 
 .map-load-warning{padding:10px 14px;background:#fff4e5;color:#79552b;font-size:13px;border-radius:6px}.portal-alert-actions{display:flex;flex-direction:column;gap:10px}
+
+.danger{color:var(--red)!important}.report-entry>.danger{display:block;margin-top:12px}#office-report-inbox{max-height:680px;overflow:auto}

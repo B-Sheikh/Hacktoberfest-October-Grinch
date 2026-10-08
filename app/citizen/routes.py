@@ -136,7 +136,7 @@ async def report(request:Request,images:Annotated[list[UploadFile],File()],
             raise HTTPException(409,'Assignment changed. Refresh your team workspace.')
         # A previously simulated or failed attempt must not block a real re-analysis.
         compatible_statuses={'mock'} if status=='mock' else {'ok','retry_ok'}
-        hashes=[r['ahash'] for r in c.execute('SELECT ahash,data FROM reports WHERE alert_id=?',(alert['id'],))
+        hashes=[r['ahash'] for r in c.execute('SELECT ahash,data FROM reports WHERE alert_id=? AND duplicate=0',(alert['id'],))
                 if r['ahash'] and json.loads(r['data']).get('extraction_status') in compatible_statuses]
         duplicate=any(sum(a!=b for a,b in zip(prepared[0][1],h))<=settings.TH['duplicate_hamming'] for h in hashes)
         nearest=(0,target) if target else None
@@ -170,6 +170,7 @@ async def report(request:Request,images:Annotated[list[UploadFile],File()],
             loc_source='pin' if pin else 'browser',loc_accuracy_m=accuracy,outside_geofence=outside,reporter_state=state,people_count=people_count,
             note_text=note,image_paths=paths,extraction=extraction,extraction_status=status)
         record['team_id']=team_id or None
+        record['vulnerable']=[v for v in vulnerable.split(',') if v]
         c.execute('INSERT INTO reports(id,alert_id,incident_id,ahash,duplicate,data) VALUES (?,?,?,?,?,?)',(report_id,alert['id'],incident_id,prepared[0][1],int(duplicate),dump(record)))
     notice='Live Gemma extraction; verify estimates before acting.' if status in ['ok','retry_ok'] else 'MOCK extraction: photo contents have not been assessed.'
     if status=='failed': notice='AI extraction failed, manual review. '+notice

@@ -4,8 +4,8 @@ const human = value => String(value).replaceAll('_', ' ');
 const scale = () => Number($('scale').value);
 let config, sites = [], selected = null, map, markers, fieldSite;
 
-async function api(url, body) {
-  const response = await fetch(url, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Waterline-Request': '1' }, body: JSON.stringify(body) });
+async function api(url, body, method = 'POST') {
+  const response = await fetch(url, body === undefined ? {} : { method, headers: { 'Content-Type': 'application/json', 'X-Waterline-Request': '1' }, body: JSON.stringify(body) });
   if (response.status === 401) { location.assign('/admin/login'); throw Error('Your admin session has ended. Sign in again.'); }
   const value = await response.json();
   if (!response.ok) throw Error(typeof value.detail === 'string' ? value.detail : 'Check the supplied information.');
@@ -42,7 +42,22 @@ function card(site, field = false) {
 async function history(id) {
   const rows = await api(`/api/incidents/${encodeURIComponent(id)}/reports`);
   if (!$('report-history')) return;
-  $('report-history').innerHTML = rows.length ? rows.map(r => `<div class="report-entry"><strong>${r.team_id ? esc(r.team_id) + ' · Field report' : 'Resident report'}</strong><p>${esc(r.note || 'No additional observation supplied.')}</p>${r.kind === 'field_update' ? `<p>${r.status ? esc(human(r.status)) : ''}${r.depth_cm != null ? ' · Measured depth ' + r.depth_cm + ' cm' : ''}${r.rescued_count != null ? ' · ' + r.rescued_count + ' rescued (reported)' : ''}</p>` : ''}<div class="photo-grid">${r.photos.map(url => `<a href="${esc(url)}" target="_blank" rel="noopener"><img src="${esc(url)}" alt="Submitted scene photo" loading="lazy"></a>`).join('')}</div><small>${esc(new Date(r.created_at).toLocaleString())} · ${esc(human(r.extraction_status))}</small></div>`).join('') : '<p class="subtle">No uploaded photos yet. Demo estimates use simulated observations.</p>';
+  $('report-history').innerHTML = rows.length ? rows.map(r => `<div class="report-entry"><strong>${r.team_id ? esc(r.team_id) + ' · Field report' : 'Resident report'}</strong><p>${esc(r.note || 'No additional observation supplied.')}</p>${r.kind === 'field_update' ? `<p>${r.status ? esc(human(r.status)) : ''}${r.depth_cm != null ? ' · Measured depth ' + r.depth_cm + ' cm' : ''}${r.rescued_count != null ? ' · ' + r.rescued_count + ' rescued (reported)' : ''}</p>` : ''}<div class="photo-grid">${r.photos.map(url => `<a href="${esc(url)}" target="_blank" rel="noopener"><img src="${esc(url)}" alt="Submitted scene photo" loading="lazy"></a>`).join('')}</div><small>${esc(new Date(r.created_at).toLocaleString())} · ${esc(human(r.extraction_status))} · ${esc(r.id)}</small>${r.kind === 'photo_report' ? `<button type="button" class="text-button danger" data-delete-report="${esc(r.id)}">Delete report</button>` : ''}</div>`).join('') : '<p class="subtle">No uploaded photos yet. Demo estimates use simulated observations.</p>';
+  bindReportDeletion($('report-history'), async () => {
+    if (location.pathname === '/command') { await refresh(); if (!selected) $('card').innerHTML = '<div class="empty-state"><h2>No remaining estimate for this site</h2><p>The deleted report was its last depth observation.</p></div>'; }
+    else location.reload();
+  });
+}
+async function bindReportDeletion(container, afterDelete) {
+  for (const button of container.querySelectorAll('[data-delete-report]')) button.onclick = async () => {
+    if (!window.confirm('Permanently delete this report and its photos? This cannot be undone. Its observations will be removed from the site estimate.')) return;
+    button.disabled = true;
+    try {
+      const result = await api(`/api/reports/${encodeURIComponent(button.dataset.deleteReport)}`, {}, 'DELETE');
+      notify(result.photo_cleanup_pending ? 'Report deleted. Some local photo files could not be removed; server cleanup is needed.' : 'Report and photos deleted.');
+      await afterDelete();
+    } catch (error) { notify(error.message, true); button.disabled = false; }
+  };
 }
 function renderQueue() {
   const term = $('search').value.trim().toLowerCase();
@@ -126,6 +141,9 @@ async function authority() {
       const rows = recipients.filter(r => r.alert_id === container.dataset.recipients);
       container.innerHTML = rows.length ? rows.map(r => `<div class="report-entry"><strong>${esc(r.phone)}</strong><span class="pill">${esc(r.status)}</span><p>${esc(r.message)}</p><a href="/report/${encodeURIComponent(r.token)}">Open personal reporting link →</a></div>`).join('') : '<p>No recipients matched this area when the alert was created.</p>';
     }
+    const reports = await api('/api/office/reports');
+    $('office-report-inbox').innerHTML = reports.length ? reports.map(r => `<article class="report-entry"><div class="outbox-row"><div><strong>${r.team_id ? 'Field photo report' : 'Civilian report'}</strong><p>${esc(new Date(r.created_at).toLocaleString())} · ${esc(human(r.extraction_status))}</p><small>Reference: ${esc(r.id)}</small></div><button type="button" class="button secondary danger" data-delete-report="${esc(r.id)}">Delete report</button></div><p>${esc(r.note || 'No additional notes.')}</p><div class="photo-grid">${r.photos.map(url => `<a href="${esc(url)}" target="_blank" rel="noopener"><img src="${esc(url)}" alt="Submitted report photo" loading="lazy"></a>`).join('')}</div></article>`).join('') : '<p class="subtle">No submitted reports.</p>';
+    bindReportDeletion($('office-report-inbox'), refreshOffice);
     await outbox(); await preview();
   }
   const residentForm = $('resident-form');

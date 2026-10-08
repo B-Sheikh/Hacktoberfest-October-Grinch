@@ -12,8 +12,10 @@ def list_sites(c,scale=1,alert_id=None):
     rows=c.execute('SELECT * FROM incidents'+(' WHERE alert_id=?' if alert_id else ''),(alert_id,) if alert_id else ()).fetchall()
     output=[]
     for row in rows:
+        stored=json.loads(row['data'])
+        if row['family']=='flood' and not stored.get('series'): continue
         alert=require_alert(c,row['alert_id'])
-        state=compute(json.loads(row['data']),alert['event_time'],scale)
+        state=compute(stored,alert['event_time'],scale)
         state.update(id=row['id'],alert_id=row['alert_id'],lat=row['lat'],lon=row['lon'],status=row['status'])
         state['n_reports']=c.execute('SELECT count(*) FROM reports WHERE incident_id=? AND duplicate=0',(row['id'],)).fetchone()[0]
         if state.get('demo_fixture'): state['n_reports']=len(state.get('series',[])) or 1
