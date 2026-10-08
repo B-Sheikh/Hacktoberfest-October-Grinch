@@ -267,7 +267,7 @@ Leaflet is loaded via unpkg. OpenStreetMap tiles show contributor attribution; u
 
 - **Local application:** [Command](http://localhost:8000/command) while the server runs.
 - **Public deployment:** [Citizen reporting portal](https://hacktoberfest-october-grinch.onrender.com/report). [Operator login](https://hacktoberfest-october-grinch.onrender.com/admin/login) requires private admin credentials. See [Render deployment and storage instructions](docs/DEPLOYMENT.md).
-- **Demo video:** The team will supply the recording separately.
+- **Demo video:** https://youtu.be/97zoOWgkyR0
 - **Devpost submission:** Not created or linked.
 
 Suggested demo: seed eleven sites, compare ETAs, inspect collapse zones and HOLD/SHORE FIRST flags, dispatch teams, open field guidance, then create a simulated alert and submit a mock photo. Keep mock badges visible in recordings.
