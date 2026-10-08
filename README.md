@@ -6,7 +6,7 @@ Waterline is our planned project for **Hacktoberfest Hack Day — Coimbatore 202
 
 ## Team
 
-**Team name:** To be confirmed. **Project name:** Waterline.
+**Team name:** October Grinch. **Project name:** Waterline.
 
 | Member | Contribution status |
 | --- | --- |
